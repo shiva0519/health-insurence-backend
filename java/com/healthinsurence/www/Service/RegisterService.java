@@ -4,12 +4,18 @@ import java.util.List;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import com.healthinsurence.www.Entity.Loginpage;
+import com.healthinsurence.www.Entity.Payment;
 import com.healthinsurence.www.Entity.Registration;
 import com.healthinsurence.www.Repositary.LoginRepository;
 import com.healthinsurence.www.Repositary.RegistrationReposotory;
+import com.healthinsurence.www.Repositary.paymentRepo;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 @Service
 public class RegisterService {
@@ -17,7 +23,9 @@ public class RegisterService {
 	@Autowired
 	RegistrationReposotory registerRepo;
 	@Autowired
-	LoginRepository loginRepositary;	
+	LoginRepository loginRepositary;
+	@Autowired
+	paymentRepo paymentRepository;
 	public Registration addregister(Registration register) {
 		Registration reg=registerRepo.save(register);
 		  Loginpage userlogin = new Loginpage();
@@ -56,15 +64,43 @@ public class RegisterService {
 		Registration reg=registerRepo.findByEmail(email);
 		reg.setFirstname(register.getFirstname());
 		reg.setAddress(register.getAddress());
+		reg.setContactNo(register.getContactNo());
+//		reg.setEmail(register.getEmail());
 		
 		
 		return registerRepo.save(reg);
-		
-		
-		
-		
 //		return registerRepo.save(register);
 	}
+	 
+	    public Registration updateUserEmail(String currentEmail, String newEmail, Registration updatedRegistration) throws Exception {
+	        try {
+	            // Check if the new email already exists
+	            Registration existingRegistrationWithEmail = registerRepo.findByEmail(newEmail);
+
+	            // If the new email already exists and it's not the same as the current email
+	            if (existingRegistrationWithEmail != null && !existingRegistrationWithEmail.getEmail().equals(currentEmail)) {
+	                throw new Exception("Email already exists: " + newEmail);
+	            }
+
+	            // Retrieve the existing registration by the current email
+	            Registration existingRegistration = registerRepo.findByEmail(currentEmail);
+
+	            
+	            if (existingRegistration == null) {
+	                throw new EntityNotFoundException("Registration not found for email: " + currentEmail);
+	            }
+
+	            
+	            existingRegistration.setEmail(newEmail); 
+
+	          
+	            return registerRepo.save(existingRegistration);
+	        } catch (DataAccessException ex) {
+	            // Handle database access exceptions
+	            // Log the error or rethrow as a custom application exception
+	            throw new Exception("Error updating registration: " + ex.getMessage(), ex);
+	        }
+	    }
 	public String generateOTP(int length) {
 		// TODO Auto-generated method stub
 		String numbers="0123456789";
@@ -82,5 +118,19 @@ public class RegisterService {
 		
 		return registerRepo.existsById(email);
 	}
+	@Transactional
+	public void updateEmail(String oldEmail, String newEmail) {
+	    // Fetch the existing entity by its primary key (email)
+	    Registration registration = registerRepo.findById(oldEmail)
+	            .orElseThrow(() -> new EntityNotFoundException("Registration not found with email: " + oldEmail));
 
+	    // Update the email address
+	    registration.setEmail(newEmail);
+
+	    // Save the updated entity back to the database
+	    registerRepo.save(registration);
+
+	    // Update the email in the Payment entity
+	    paymentRepository.updateEmail(oldEmail, newEmail);
+	}
 }

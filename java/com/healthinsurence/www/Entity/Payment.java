@@ -14,6 +14,8 @@ public class Payment {
 	
 	@Column
 	private String planType;
+//	@Column
+//    private String email;
 	@Id
 	private String userId;
 	@Column
@@ -52,7 +54,14 @@ public class Payment {
 	}
 	public void setDuration(String duration) {
 		this.duration = duration;
-	}
+}
+	//public String getEmail() {
+//        return email;
+//    }
+//
+//    public void setEmail(String email) {
+//        this.email = email;
+//    }
 	public String getInsurence_cover() {
 		return insurence_cover;
 	}

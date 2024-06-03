@@ -1,6 +1,7 @@
 package com.healthinsurence.www.Controller;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -9,6 +10,8 @@ import java.util.List;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +26,9 @@ import org.springframework.web.client.RestTemplate;
 import com.healthinsurence.www.Entity.Registration;
 import com.healthinsurence.www.Service.RegisterService;
 
-@CrossOrigin(origins="http://localhost:3000")
+import jakarta.persistence.EntityNotFoundException;
+
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/register")
 public class RegisterController {
@@ -53,70 +58,103 @@ public class RegisterController {
 		private Registration update(@RequestBody Registration register, @PathVariable String email ) {
 		return registerservice.update(register,email);
 	}
+
+//    @PutMapping("/user/update/{currentEmail}/{newEmail}")
+//    public ResponseEntity<?> updateUserEmail(@PathVariable String currentEmail, @PathVariable String newEmail, @RequestBody Registration updatedRegistration) throws Exception {
+//        
+//            Registration updatedUser = registerservice.updateUserEmail(currentEmail, newEmail, updatedRegistration);
+//            return ResponseEntity.ok(updatedUser);
+//        }
+	 @PutMapping("/user/update-email")
+	    public ResponseEntity<String> updateEmail(
+	            @RequestParam String oldEmail,
+	            @RequestParam String newEmail) {
+	        try {
+	            registerservice.updateEmail(oldEmail, newEmail);
+	            return ResponseEntity.ok("Email updated successfully");
+	        } catch (EntityNotFoundException e) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Registration not found with email: " + oldEmail);
+	        } catch (Exception e) {
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating email: " + e.getMessage());
+	        }
+	    }
+	
+	
+	
+
 	@PostMapping("/sendEmail/{emailRequest}")
 	public String sendEmail(@PathVariable String emailRequest) {
-	String postUrl = "https://api.zeptomail.in/v1.1/email";
-	StringBuffer sb = new StringBuffer();
-	String otp=registerservice.generateOTP(5);
-	try {
+	    String postUrl = "https://api.zeptomail.in/v1.1/email";
+	    StringBuffer sb = new StringBuffer();
+	    String otp = registerservice.generateOTP(5);
+	    try {
 
-	URL url = new URL(postUrl);
-	HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	conn.setDoOutput(true);
-	conn.setRequestMethod("POST");
-	conn.setRequestProperty("Content-Type", "application/json");
-	conn.setRequestProperty("Accept", "application/json");
-	conn.setRequestProperty("Authorization", "Zoho-enczapikey PHtE6r0EFLjr3jMsp0QAt/+wE8TyN40tr+hmKFMVsIgUXqMFTk0Bqdl6wDPiqU8jXPJHR/ObzN5ttLOe5+ONdGrtZG1NXmqyqK3sx/VYSPOZsbq6x00etFUdcE3aUIbvetFq0ifQvdbcNA==");
+	        URL url = new URL(postUrl);
+	        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+	        conn.setDoOutput(true);
+	        conn.setRequestMethod("POST");
+	        conn.setRequestProperty("Content-Type", "application/json");
+	        conn.setRequestProperty("Accept", "application/json");
+	        conn.setRequestProperty("Authorization", "Zoho-enczapikey PHtE6r0EFLjr3jMsp0QAt/+wE8TyN40tr+hmKFMVsIgUXqMFTk0Bqdl6wDPiqU8jXPJHR/ObzN5ttLOe5+ONdGrtZG1NXmqyqK3sx/VYSPOZsbq6x00etFUdcE3aUIbvetFq0ifQvdbcNA==");
 
-	JSONObject requestBody = new JSONObject();
-	JSONObject from = new JSONObject();
-	String email="support@qtnext.com";
-	from.put("address", email);
-	requestBody.put("from", from);
+	        JSONObject requestBody = new JSONObject();
+	        JSONObject from = new JSONObject();
+	        String email = "support@qtnext.com";
+	        from.put("address", email);
+	        requestBody.put("from", from);
 
-	JSONObject to = new JSONObject();
-	JSONObject emailAddress = new JSONObject();
-	emailAddress.put("address", emailRequest);
-	// emailAddress.put("name", emailRequest.getToName());
-	to.put("email_address", emailAddress);
-	requestBody.put("to", new JSONObject[]{to});
+	        JSONObject to = new JSONObject();
+	        JSONObject emailAddress = new JSONObject();
+	        emailAddress.put("address", emailRequest);
+	        to.put("email_address", emailAddress);
+	        requestBody.put("to", new JSONObject[]{to});
 
-	requestBody.put("subject", "Stay alert Ashoke ? you are screened in a phishing");
-//	Stay alert Uma ? you are screened in a phishing
-	String greeting="thanks & regards";
-	String ofcName="RS Insurance pvt ltd.";
-	String address1="Madhapur, Hyderabad,";
-	String address2="Telangana, India. 500081";
+	        requestBody.put("subject", "Email updation for Rs Insurence");
+	        String greeting = "thanks & regards";
+	        String ofcName = "RS Insurance pvt ltd.";
+	        String address1 = "Madhapur, Hyderabad,";
+	        String address2 = "Telangana, India. 500081";
 
+	        requestBody.put("htmlbody", "Dear Custumer,Otp to update the email in Rs Insurance pvt ltd. Here is you 6 digits one time password: <h3> " + otp + " " + "<h5>" + greeting + "<br/>" + ofcName + "<br/>" + address1 + "<br/>" + address2 + "");
+	        OutputStream os = conn.getOutputStream();
+	        os.write(requestBody.toString().getBytes());
+	        os.flush();
 
+	        BufferedReader br;
+	        if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+	            InputStream inputStream = conn.getInputStream();
+	            if (inputStream != null) {
+	                br = new BufferedReader(new InputStreamReader(inputStream));
+	                String output;
+	                while ((output = br.readLine()) != null) {
+	                    sb.append(output);
+	                }
+	                br.close();
+	            } else {
+	                // Handle null inputStream, throw exception or log error
+	            }
+	        } else {
+	            InputStream errorStream = conn.getErrorStream();
+	            if (errorStream != null) {
+	                br = new BufferedReader(new InputStreamReader(errorStream));
+	                String output;
+	                while ((output = br.readLine()) != null) {
+	                    sb.append(output);
+	                }
+	                br.close();
+	            } else {
+	                // Handle null errorStream, throw exception or log error
+	            }
+	        }
+	        conn.disconnect();
 
-//	requestBody.put("htmlbody", "Dear Custumer,Otp to update the email in Rs Insurance pvt ltd. Here is you 6 digits one time password: <h3> "+otp+" "+"<h5>"+greeting+"<br/>"+ofcName+"<br/>"+address1+"<br/>"+address2+"");
-	requestBody.put("htmlbody", "your phone was about to get in phishing as the same name of our company! Stay Alert Ashoke");
-	OutputStream os = conn.getOutputStream();
-	os.write(requestBody.toString().getBytes());
-	os.flush();
-
-	BufferedReader br;
-	if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-	br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-	} else {
-	br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
+	        return otp;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return otp;
+	    }
 	}
 
-	String output;
-	while ((output = br.readLine()) != null) {
-	sb.append(output);
-	}
-
-	br.close();
-	conn.disconnect();
-
-	return otp;
-	} catch (Exception e) {
-	e.printStackTrace();
-	return otp;
-	}
-	}
 	 @GetMapping("/sendOtp")
 	    public String sendOtp(@RequestParam String mobileno, @RequestParam String otp) {
 	        String url = "https://login4.spearuc.com/MOBILE_APPS_API/sms_api.php?type=smsquicksend&user=qtnextotp&pass=987654&sender=QTTINF"
