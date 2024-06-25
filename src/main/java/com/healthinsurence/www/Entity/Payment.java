@@ -1,5 +1,8 @@
 package com.healthinsurence.www.Entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -28,7 +31,7 @@ public class Payment {
 	private String intrest;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name="user_email",referencedColumnName = "email")
+	@JoinColumn(name="customerId",referencedColumnName = "customerId")
 	private Registration register;
 	
 	public String getPlanType() {
@@ -80,11 +83,6 @@ public class Payment {
 	public void setRegister(Registration register) {
 		this.register = register;
 	}	
-	
-	
-	
-	
-	
 	
 
 }

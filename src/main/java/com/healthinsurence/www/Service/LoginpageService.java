@@ -36,8 +36,8 @@ public class LoginpageService {
 		
 	}
 	public Optional<Loginpage> findByEmail(String username) {
-		// TODO Auto-generated method stub
-		return loginRepositary.findById(username);
+		
+		return loginRepositary.findByusername(username);
 	}
 	
 	

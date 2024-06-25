@@ -11,5 +11,16 @@ import com.healthinsurence.www.Entity.Registration;
 public interface RegistrationReposotory extends JpaRepository<Registration, String>{
 
 	Registration findByEmail(String email);
+//boolean findByemail(String email);
+
+//boolean findByemail(String email);
+
+
+	List<Registration> findBycustomerId(String string);
+
+
+//List<Registration> findByCustomerId(String string);
+
+
 
 }

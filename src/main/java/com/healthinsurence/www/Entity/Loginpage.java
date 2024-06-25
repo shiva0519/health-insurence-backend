@@ -12,7 +12,12 @@ import jakarta.persistence.Table;
 
 public class Loginpage {
 	
+	
 	@Id
+	private String customerId;
+	
+	
+	@Column
 	private String username;
 	
 	@Column
@@ -32,6 +37,14 @@ public class Loginpage {
 
 	public void setUserpassword(String userpassword) {
 		this.userpassword = userpassword;
+	}
+
+	public String getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(String customerId) {
+		this.customerId = customerId;
 	}
 	
 	

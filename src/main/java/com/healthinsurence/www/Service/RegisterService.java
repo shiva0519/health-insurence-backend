@@ -1,6 +1,7 @@
 package com.healthinsurence.www.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import com.healthinsurence.www.Entity.Loginpage;
-import com.healthinsurence.www.Entity.Payment;
 import com.healthinsurence.www.Entity.Registration;
 import com.healthinsurence.www.Repositary.LoginRepository;
 import com.healthinsurence.www.Repositary.RegistrationReposotory;
@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class RegisterService {
+	private String customerId;
 	
 	@Autowired
 	RegistrationReposotory registerRepo;
@@ -26,12 +27,19 @@ public class RegisterService {
 	LoginRepository loginRepositary;
 	@Autowired
 	paymentRepo paymentRepository;
+//	@Autowired
+//	Loginpage loginpage;
+	
 	public Registration addregister(Registration register) {
+		customerId=generateOTP(6);
+		
+		register.setCustomerId(customerId);
 		Registration reg=registerRepo.save(register);
 		  Loginpage userlogin = new Loginpage();
 
 		 userlogin.setUsername(reg.getEmail());
 		 userlogin.setUserpassword(reg.getPassword());
+		 userlogin.setCustomerId(reg.getCustomerId());
 		loginRepositary.save(userlogin);
 		
 		return registerRepo.save(register);
@@ -65,14 +73,19 @@ public class RegisterService {
 		reg.setFirstname(register.getFirstname());
 		reg.setAddress(register.getAddress());
 		reg.setContactNo(register.getContactNo());
-//		reg.setEmail(register.getEmail());
+		reg.setEmail(register.getEmail());
+	 Loginpage login=loginRepositary.findByUsername(email);
+		 
+		login.setUsername(register.getEmail());
+		loginRepositary.save(login);
+		
 		
 		
 		return registerRepo.save(reg);
 //		return registerRepo.save(register);
 	}
 	 
-	    public Registration updateUserEmail(String currentEmail, String newEmail, Registration updatedRegistration) throws Exception {
+	public Registration updateUserEmail(String currentEmail, String newEmail, Registration updatedRegistration) throws Exception {
 	        try {
 	            // Check if the new email already exists
 	            Registration existingRegistrationWithEmail = registerRepo.findByEmail(newEmail);
@@ -114,10 +127,25 @@ public class RegisterService {
 		
 		return otp.toString();
 	}
+//	public boolean checkMail(String email) {
+//		Optional<Registration> register=Optional.of(registerRepo.findByEmail(email));
+//		if(register.isEmpty()) {
+//			return false;
+//		}
+//		return true;
+//	
+//	}
 	public boolean checkMail(String email) {
-		
-		return registerRepo.existsById(email);
+	    // Use Optional.ofNullable to handle the case where findByEmail returns null
+	    Optional<Registration> register = Optional.ofNullable(registerRepo.findByEmail(email));
+	    
+	    // Check if the Optional is empty
+	    if (register.isEmpty()) {
+	        return false;
+	    }
+	    return true;
 	}
+
 	@Transactional
 	public void updateEmail(String oldEmail, String newEmail) {
 	    // Fetch the existing entity by its primary key (email)
@@ -131,6 +159,7 @@ public class RegisterService {
 	    registerRepo.save(registration);
 
 	    // Update the email in the Payment entity
-	    paymentRepository.updateEmail(oldEmail, newEmail);
+//	    paymentRepository.updateEmail(oldEmail, newEmail);
 	}
+	
 }

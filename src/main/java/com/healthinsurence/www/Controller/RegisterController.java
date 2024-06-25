@@ -28,10 +28,12 @@ import com.healthinsurence.www.Service.RegisterService;
 
 import jakarta.persistence.EntityNotFoundException;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/register")
 public class RegisterController {
+	
+	
 	
 	@Autowired
 	RegisterService registerservice;
@@ -154,6 +156,7 @@ public class RegisterController {
 	        return otp;
 	    }
 	}
+
 
 	 @GetMapping("/sendOtp")
 	    public String sendOtp(@RequestParam String mobileno, @RequestParam String otp) {

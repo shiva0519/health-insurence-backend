@@ -21,10 +21,9 @@ public class paymentService {
 	return paymentRepo.save(payment);
 	}
 
-	public Payment getCustomer(String email) {
-        return paymentRepo.findByRegistrationEmail(email);
+	public List<Payment> getCustomerPayments(String customerId) {
+        return paymentRepo.findByRegistrationCustomerId(customerId);
     }
-
 	public List<Payment> getCustomerByMail(String email) {
 		
 		return paymentRepo.findAllByRegisterEmail(email);

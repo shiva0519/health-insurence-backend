@@ -10,9 +10,12 @@ import lombok.Data;
 @Table(name="registration")
 
 public class Registration {
+	@Id
+	@Column(name = "customerId")
+	private String customerId;	
 	@Column
 	private String firstname;
-	@Id
+	@Column
 	private String email;
 	@Column
 	private String password;
@@ -73,6 +76,12 @@ public class Registration {
 	}
 	public void setMaritual(String maritual) {
 		this.maritual = maritual;
+	}
+	public String getCustomerId() {
+		return customerId;
+	}
+	public void setCustomerId(String customerId) {
+		this.customerId = customerId;
 	}
 	
 	

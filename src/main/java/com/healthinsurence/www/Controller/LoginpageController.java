@@ -19,7 +19,7 @@ import com.healthinsurence.www.Service.LoginpageService;
 import com.healthinsurence.www.Service.RegisterService;
 
 
-@CrossOrigin(origins="http://localhost:3000")
+@CrossOrigin(origins="*")
 @RestController
 @RequestMapping("/Loginpage")
 public class LoginpageController {
@@ -53,9 +53,7 @@ public class LoginpageController {
 		 else {
 		        // User with the given email not found
 		        return "User not found";
-		    }
-		
-		 
+		    } 
 	}
 	@GetMapping("/getAll")
 	public List<Loginpage> getAll(@RequestBody Loginpage loginpage) {
